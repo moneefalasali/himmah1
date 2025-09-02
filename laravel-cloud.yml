@@ -1,0 +1,47 @@
+# Laravel Cloud Configuration
+name: himmah-platform
+region: us-east-1
+
+# Build Configuration
+build:
+  commands:
+    - composer install --optimize-autoloader --no-dev
+    - npm install
+    - npm run build
+    - php artisan config:cache
+    - php artisan route:cache
+    - php artisan view:cache
+
+# Environment Variables
+environment:
+  APP_NAME: "منصة همة"
+  APP_ENV: production
+  APP_DEBUG: false
+  LOG_LEVEL: error
+  CACHE_DRIVER: redis
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+
+# Database
+database:
+  engine: mysql
+  version: "8.0"
+
+# Cache
+cache:
+  engine: redis
+
+# Storage
+storage:
+  disk: s3
+
+# Scheduled Tasks
+schedule:
+  - command: "php artisan queue:work --stop-when-empty"
+    frequency: "* * * * *"
+
+# Health Checks
+health_checks:
+  - path: /health
+    interval: 30
+
