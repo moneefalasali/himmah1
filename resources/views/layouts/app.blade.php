@@ -327,8 +327,8 @@
                 </div>
                 <div class="col-md-3">
                     <h6>تواصل معنا</h6>
-                    <p class="mb-1"><i class="fas fa-envelope me-2"></i>info@himmah.com</p>
-                    <p class="mb-0"><i class="fas fa-phone me-2"></i>+966 50 123 4567</p>
+                    <p class="mb-1"><i class="fas fa-envelope me-2"></i>hemmah.platform.app@gmail.com</p>
+                    <p class="mb-0"><i class="fas fa-phone me-2"></i> </p>
                 </div>
             </div>
             <hr class="my-3">
