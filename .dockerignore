@@ -17,5 +17,5 @@ storage/framework/views/*
 bootstrap/cache/*
 tests/
 .phpunit.result.cache
-vendor/
+
 

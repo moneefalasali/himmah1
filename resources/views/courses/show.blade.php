@@ -23,7 +23,6 @@
                             </p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>التصنيف:</strong> برمجة</p>
                             <p><strong>السعر:</strong> <span class="fw-bold fs-4 text-primary">{{ $course->formatted_price }}</span></p>
                             @if($course->features_description)
                                 <p class="text-success mb-0">
@@ -76,47 +75,6 @@
             </div>
             
             <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h4 class="mb-0">ماذا ستتعلم؟</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> فهم أساسيات البرمجة
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> تطبيق المفاهيم العملية
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> بناء مشاريع حقيقية
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> حل المشاكل البرمجية
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> استخدام أفضل الممارسات
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> تطوير مهارات التفكير المنطقي
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> العمل مع الأدوات الحديثة
-                                </li>
-                                <li class="list-group-item">
-                                    <i class="bi bi-check-circle text-success me-2"></i> إعداد بيئة التطوير
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h4 class="mb-0">المحتوى</h4>
@@ -223,7 +181,6 @@
                         <img src="/instructor-default.jpg" class="rounded-circle me-3" width="60" height="60">
                         <div>
                             <h6 class="mb-0">{{ $course->instructor_name }}</h6>
-                            <small class="text-muted">خبير في برمجة</small>
                         </div>
                     </div>
                     <p>مدرب معتمد ذو خبرة في المجال التقني والتعليم الإلكتروني.</p>
@@ -238,7 +195,6 @@
                         <li class="mb-2"><i class="bi bi-clock me-2"></i> {{ $course->duration }} ساعة فيديو</li>
                         <li class="mb-2"><i class="bi bi-file-earmark-text me-2"></i> {{ $course->resources_count }} موارد</li>
                         <li class="mb-2"><i class="bi bi-phone me-2"></i> متوافق مع الجوال</li>
-                        <li class="mb-2"><i class="bi bi-certificate me-2"></i> شهادة إتمام</li>
                         <li class="mb-2"><i class="bi bi-laptop me-2"></i> متطلبات: {{ $course->requirements }}</li>
                     </ul>
                 </div>
