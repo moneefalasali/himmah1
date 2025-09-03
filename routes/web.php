@@ -87,9 +87,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/history', [PaymentController::class, 'paymentHistory'])->name('payment.history');
     
     // الخدمات التعليمية
+        // الخدمات التعليمية
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
-    Route::get('/services/{serviceTypeName}/create', [ServiceController::class, 'create'])->name('services.create');
-    Route::post('/services/{serviceTypeName}', [ServiceController::class, 'store'])->name('services.store');
+    Route::get('/services/{slug}/create', [ServiceController::class, 'create'])->name('services.create');
+    Route::post('/services/{slug}', [ServiceController::class, 'store'])->name('services.store');
     Route::get('/service-requests/{serviceRequest}', [ServiceController::class, 'show'])->name('services.show');
     Route::get('/my-service-requests', [UserController::class, 'myServiceRequests'])->name('my-service-requests');
     Route::post('/service-requests/{serviceRequest}/cancel', [ServiceController::class, 'cancel'])->name('services.cancel');
