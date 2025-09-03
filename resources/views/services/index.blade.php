@@ -14,7 +14,7 @@
                     </div>
                     <h4 class="card-title mb-3">حل واجب</h4>
                     <p class="card-text text-muted mb-4">نقوم بحل واجباتك بدقة عالية مع شرح مفصل.</p>
-                    <a href="{{ route('services.create', 'حل واجب') }}" class="btn btn-primary w-100">
+                    <a href="{{ route('services.create', 'hal-wajib') }}" class="btn btn-primary w-100">
                         طلب الآن
                     </a>
                 </div>
@@ -29,7 +29,7 @@
                     </div>
                     <h4 class="card-title mb-3">مشروع تخرج</h4>
                     <p class="card-text text-muted mb-4">إرشاد ومساعدة في مشروع التخرج من البداية حتى النهاية.</p>
-                    <a href="{{ route('services.create', 'مشروع تخرج') }}" class="btn btn-success w-100">
+                    <a href="{{ route('services.create', 'graduation-project') }}" class="btn btn-success w-100">
                         طلب الآن
                     </a>
                 </div>
@@ -44,7 +44,7 @@
                     </div>
                     <h4 class="card-title mb-3">تدقيق لغوي</h4>
                     <p class="card-text text-muted mb-4">مراجعة أكاديمية وتدقيق لغوي لجميع أنواع المستندات.</p>
-                    <a href="{{ route('services.create', 'تدقيق لغوي') }}" class="btn btn-info w-100">
+                    <a href="{{ route('services.create', 'proofreading') }}" class="btn btn-info w-100">
                         طلب الآن
                     </a>
                 </div>
@@ -59,7 +59,7 @@
                     </div>
                     <h4 class="card-title mb-3">تحليل بيانات</h4>
                     <p class="card-text text-muted mb-4">تحليل البيانات باستخدام أدوات إحصائية متطورة.</p>
-                    <a href="{{ route('services.create', 'تحليل بيانات') }}" class="btn btn-warning w-100">
+                    <a href="{{ route('services.create', 'data-analysis') }}" class="btn btn-warning w-100">
                         طلب الآن
                     </a>
                 </div>
@@ -74,7 +74,7 @@
                     </div>
                     <h4 class="card-title mb-3">استشارة أكاديمية</h4>
                     <p class="card-text text-muted mb-4">استشارات في اختيار التخصص والمسار الأكاديمي.</p>
-                    <a href="{{ route('services.create', 'استشارة أكاديمية') }}" class="btn btn-danger w-100">
+                    <a href="{{ route('services.create', 'academic-consulting') }}" class="btn btn-danger w-100">
                         طلب الآن
                     </a>
                 </div>
@@ -89,7 +89,7 @@
                     </div>
                     <h4 class="card-title mb-3">استفسار عام</h4>
                     <p class="card-text text-muted mb-4">استفسارات عامة أو طلب خدمة غير مدرجة.</p>
-                    <a href="{{ route('services.create', 'استفسار عام') }}" class="btn btn-secondary w-100">
+                    <a href="{{ route('services.create', 'general-inquiry') }}" class="btn btn-secondary w-100">
                         طلب الآن
                     </a>
                 </div>

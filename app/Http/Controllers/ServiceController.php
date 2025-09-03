@@ -18,6 +18,18 @@ class ServiceController extends Controller
     }
 
     /**
+     * Mapping between slugs and Arabic service names.
+     */
+    private $serviceSlugs = [
+        'hal-wajib' => 'حل واجب',
+        'graduation-project' => 'مشروع تخرج',
+        'proofreading' => 'تدقيق لغوي',
+        'data-analysis' => 'تحليل بيانات',
+        'academic-consulting' => 'استشارة أكاديمية',
+        'general-inquiry' => 'استفسار عام',
+    ];
+
+    /**
      * Display a listing of service types.
      */
     public function index()
@@ -29,8 +41,14 @@ class ServiceController extends Controller
     /**
      * Show the form for creating a new service request.
      */
-    public function create($serviceTypeName)
+    public function create($slug)
     {
+        $serviceTypeName = $this->serviceSlugs[$slug] ?? null;
+
+        if (!$serviceTypeName) {
+            abort(404, 'خدمة غير موجودة.');
+        }
+
         $serviceType = ServiceType::where('name', $serviceTypeName)->firstOrFail();
         return view('services.create', compact('serviceType'));
     }
@@ -38,8 +56,14 @@ class ServiceController extends Controller
     /**
      * Store a newly created service request.
      */
-    public function store(Request $request, $serviceTypeName)
+    public function store(Request $request, $slug)
     {
+        $serviceTypeName = $this->serviceSlugs[$slug] ?? null;
+
+        if (!$serviceTypeName) {
+            abort(404, 'خدمة غير موجودة.');
+        }
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -164,4 +188,3 @@ class ServiceController extends Controller
         return Storage::disk('public')->download($file->file_path, $file->file_name);
     }
 }
-
