@@ -28,36 +28,42 @@ class TestDataSeeder extends Seeder
         // قائمة المستخدمين المطلوبين
         $userEmails = [
             'alharremy078xi@gmail.com',
-            'almmnyf@gmail.com',
         ];
 
-        $courseTitle = 'مصطلحات طبية';
+        // الاسم الصحيح للدورة
+        $courseTitle = 'مصطلحات طبيه';
 
         $course = Course::where('title', $courseTitle)->first();
 
-        if ($course) {
-            foreach ($userEmails as $email) {
-                $user = User::where('email', $email)->first();
+        if (!$course) {
+            \Log::warning("الدورة '$courseTitle' غير موجودة في جدول courses.");
+            return;
+        }
 
-                if ($user) {
-                    // نتأكد أن الشراء ما يتكرر
-                    $exists = Purchase::where('user_id', $user->id)
-                        ->where('course_id', $course->id)
-                        ->exists();
+        foreach ($userEmails as $email) {
+            $user = User::where('email', $email)->first();
 
-                    if (!$exists) {
-                        Purchase::create([
-                            'user_id' => $user->id,
-                            'course_id' => $course->id,
-                            'amount' => $course->price,
-                            'payment_status' => 'completed',
-                            'payment_method' => 'paytabs',
-                            'transaction_id' => 'TXN_' . uniqid(),
-                            'created_at' => now()->subDays(rand(1, 30)),
-                            'updated_at' => now()->subDays(rand(1, 30)),
-                        ]);
-                    }
-                }
+            if (!$user) {
+                \Log::warning("المستخدم '$email' غير موجود في جدول users.");
+                continue;
+            }
+
+            // نتأكد أن الشراء ما يتكرر
+            $exists = Purchase::where('user_id', $user->id)
+                ->where('course_id', $course->id)
+                ->exists();
+
+            if (!$exists) {
+                Purchase::create([
+                    'user_id' => $user->id,
+                    'course_id' => $course->id,
+                    'amount' => $course->price,
+                    'payment_status' => 'completed',
+                    'payment_method' => 'paytabs',
+                    'transaction_id' => 'TXN_' . uniqid(),
+                    'created_at' => now()->subDays(rand(1, 30)),
+                    'updated_at' => now()->subDays(rand(1, 30)),
+                ]);
             }
         }
     }  
