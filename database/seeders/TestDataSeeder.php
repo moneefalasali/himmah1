@@ -25,32 +25,41 @@ class TestDataSeeder extends Seeder
 
     private function createPurchases()  
     {  
-        // المستخدم والدورة المطلوبة فقط
-        $userEmail = 'alharremy078xi@gmail.com';  
-        $courseTitle = 'مصطلحات طبية';  
+        // قائمة المستخدمين المطلوبين
+        $userEmails = [
+            'alharremy078xi@gmail.com',
+            'almmnyf@gmail.com',
+        ];
 
-        $user = User::where('email', $userEmail)->first();  
-        $course = Course::where('title', $courseTitle)->first();  
+        $courseTitle = 'مصطلحات طبية';
 
-        if ($user && $course) {  
-            // نتأكد أنه ما يكرر الشراء إذا كان موجود مسبقاً
-            $exists = Purchase::where('user_id', $user->id)
-                ->where('course_id', $course->id)
-                ->exists();
+        $course = Course::where('title', $courseTitle)->first();
 
-            if (!$exists) {
-                Purchase::create([  
-                    'user_id' => $user->id,  
-                    'course_id' => $course->id,  
-                    'amount' => $course->price,  
-                    'payment_status' => 'completed',  
-                    'payment_method' => 'paytabs',  
-                    'transaction_id' => 'TXN_' . uniqid(),  
-                    'created_at' => now()->subDays(rand(1, 30)),  
-                    'updated_at' => now()->subDays(rand(1, 30)),  
-                ]);  
+        if ($course) {
+            foreach ($userEmails as $email) {
+                $user = User::where('email', $email)->first();
+
+                if ($user) {
+                    // نتأكد أن الشراء ما يتكرر
+                    $exists = Purchase::where('user_id', $user->id)
+                        ->where('course_id', $course->id)
+                        ->exists();
+
+                    if (!$exists) {
+                        Purchase::create([
+                            'user_id' => $user->id,
+                            'course_id' => $course->id,
+                            'amount' => $course->price,
+                            'payment_status' => 'completed',
+                            'payment_method' => 'paytabs',
+                            'transaction_id' => 'TXN_' . uniqid(),
+                            'created_at' => now()->subDays(rand(1, 30)),
+                            'updated_at' => now()->subDays(rand(1, 30)),
+                        ]);
+                    }
+                }
             }
-        }  
+        }
     }  
 
     private function createReviews()  
