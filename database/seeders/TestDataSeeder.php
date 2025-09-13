@@ -2,14 +2,12 @@
 
 namespace Database\Seeders;  
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;  
 use Illuminate\Database\Seeder;  
-use Illuminate\Support\Facades\DB;  
+use Illuminate\Support\Facades\Log;
 use App\Models\User;  
 use App\Models\Course;  
 use App\Models\Purchase;  
 use App\Models\Review;  
-use App\Models\ServiceRequest;  
 
 class TestDataSeeder extends Seeder  
 {  
@@ -19,125 +17,74 @@ class TestDataSeeder extends Seeder
     public function run(): void  
     {  
         $this->createPurchases();  
-        $this->createReviews();  
-        $this->createServiceRequests();  
+        $this->createReviews(70); // نسبة إضافة المراجعات (تقدر تعدلها)
     }  
 
     private function createPurchases()  
     {  
-        // قائمة المستخدمين المطلوبين
-        $userEmails = [
-            'alharremy078xi@gmail.com',
+        // قائمة المستخدمين والدورات
+        $userCourses = [
+            'baro-2011@windowslive.com' => ['الرياضيات لعلوم الحاسب '],
         ];
 
-        // الاسم الصحيح للدورة
-        $courseTitle = 'مصطلحات طبيه';
-
-        $course = Course::where('title', $courseTitle)->first();
-
-        if (!$course) {
-            \Log::warning("الدورة '$courseTitle' غير موجودة في جدول courses.");
-            return;
-        }
-
-        foreach ($userEmails as $email) {
+        foreach ($userCourses as $email => $courses) {
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                \Log::warning("المستخدم '$email' غير موجود في جدول users.");
+                Log::warning("المستخدم '$email' غير موجود في جدول users.");
                 continue;
             }
 
-            // نتأكد أن الشراء ما يتكرر
-            $exists = Purchase::where('user_id', $user->id)
-                ->where('course_id', $course->id)
-                ->exists();
+            foreach ($courses as $courseTitle) {
+                $course = Course::where('title', $courseTitle)->first();
 
-            if (!$exists) {
-                Purchase::create([
-                    'user_id' => $user->id,
-                    'course_id' => $course->id,
-                    'amount' => $course->price,
-                    'payment_status' => 'completed',
-                    'payment_method' => 'paytabs',
-                    'transaction_id' => 'TXN_' . uniqid(),
-                    'created_at' => now()->subDays(rand(1, 30)),
-                    'updated_at' => now()->subDays(rand(1, 30)),
-                ]);
+                if (!$course) {
+                    Log::warning("الدورة '$courseTitle' غير موجودة في جدول courses.");
+                    continue;
+                }
+
+                // نتأكد أن الشراء ما يتكرر
+                $exists = Purchase::where('user_id', $user->id)
+                    ->where('course_id', $course->id)
+                    ->exists();
+
+                if (!$exists) {
+                    Purchase::create([
+                        'user_id' => $user->id,
+                        'course_id' => $course->id,
+                        'amount' => $course->price,
+                        'payment_status' => 'completed',
+                        'payment_method' => 'paytabs',
+                        'transaction_id' => 'TXN_' . uniqid(),
+                        'created_at' => now()->subDays(rand(1, 30)),
+                        'updated_at' => now()->subDays(rand(1, 30)),
+                    ]);
+                }
             }
         }
     }  
 
-    private function createReviews()  
+    private function createReviews(int $percentage = 70)  
     {  
         $purchases = Purchase::where('payment_status', 'completed')->get();  
 
         foreach ($purchases as $purchase) {  
-            // 70% من المشتريات لها مراجعات  
-            if (rand(1, 100) <= 70) {  
-                Review::create([  
-                    'user_id' => $purchase->user_id,  
-                    'course_id' => $purchase->course_id,  
-                    'rating' => rand(3, 5), // تقييم من 3-5 نجوم  
-                    'comment' => $this->getRandomReviewComment(),  
-                    'created_at' => $purchase->created_at->addDays(rand(1, 7)),  
-                    'updated_at' => $purchase->created_at->addDays(rand(1, 7)),  
-                ]);  
-            }  
-        }  
-    }  
+            // نسبة المراجعات حسب المتغير $percentage
+            if (rand(1, 100) <= $percentage) {  
+                $exists = Review::where('user_id', $purchase->user_id)
+                    ->where('course_id', $purchase->course_id)
+                    ->exists();
 
-    private function createServiceRequests()  
-    {  
-        $users = User::where('role', 'user')->get();  
-        $serviceTypes = DB::table('service_types')->get();  
-
-        $statuses = ['pending', 'in_progress', 'completed', 'cancelled'];  
-        $titles = [  
-            'طلب حل واجب في الرياضيات',  
-            'مشروع برمجة في Java',  
-            'تحليل بيانات إحصائية',  
-            'تصميم قاعدة بيانات',  
-            'ترجمة مقال أكاديمي',  
-            'تدقيق لغوي لرسالة ماجستير',  
-            'إعداد عرض تقديمي',  
-            'كتابة تقرير بحثي',  
-            'تحليل مشكلة برمجية',  
-            'تصميم واجهة مستخدم'  
-        ];  
-
-        $descriptions = [  
-            'أحتاج مساعدة في حل مجموعة من المسائل الرياضية المتقدمة',  
-            'مشروع برمجة يتطلب تطبيق كامل بلغة Java',  
-            'تحليل بيانات إحصائية لمشروع بحثي',  
-            'تصميم قاعدة بيانات لمتجر إلكتروني',  
-            'ترجمة مقال أكاديمي من الإنجليزية إلى العربية',  
-            'تدقيق لغوي وإملائي لرسالة ماجستير',  
-            'إعداد عرض تقديمي احترافي',  
-            'كتابة تقرير بحثي شامل',  
-            'تحليل وحل مشكلة برمجية معقدة',  
-            'تصميم واجهة مستخدم حديثة وسهلة الاستخدام'  
-        ];  
-
-        foreach ($users as $user) {  
-            // كل مستخدم له 1-3 طلبات خدمات  
-            $numRequests = rand(1, 3);  
-
-            for ($i = 0; $i < $numRequests; $i++) {  
-                $serviceType = $serviceTypes->random();  
-                $status = $statuses[array_rand($statuses)];  
-                $titleIndex = array_rand($titles);  
-
-                ServiceRequest::create([  
-                    'user_id' => $user->id,  
-                    'service_type_id' => $serviceType->id,  
-                    'title' => $titles[$titleIndex],  
-                    'description' => $descriptions[$titleIndex],  
-                    'requirements' => 'متطلبات إضافية: ' . $this->getRandomRequirements(),  
-                    'status' => $status,  
-                    'created_at' => now()->subDays(rand(1, 60)),  
-                    'updated_at' => now()->subDays(rand(1, 60)),  
-                ]);  
+                if (!$exists) {
+                    Review::create([  
+                        'user_id' => $purchase->user_id,  
+                        'course_id' => $purchase->course_id,  
+                        'rating' => rand(3, 5), // تقييم من 3-5 نجوم  
+                        'comment' => $this->getRandomReviewComment(),  
+                        'created_at' => $purchase->created_at->addDays(rand(1, 7)),  
+                        'updated_at' => $purchase->created_at->addDays(rand(1, 7)),  
+                    ]);
+                }
             }  
         }  
     }  
@@ -158,23 +105,5 @@ class TestDataSeeder extends Seeder
         ];  
 
         return $comments[array_rand($comments)];  
-    }  
-
-    private function getRandomRequirements()  
-    {  
-        $requirements = [  
-            'يجب أن يكون الحل مفصل مع شرح الخطوات',  
-            'مطلوب تسليم خلال 48 ساعة',  
-            'يجب أن يكون العمل أصلي وغير منسوخ',  
-            'مطلوب استخدام أحدث التقنيات',  
-            'يجب أن يكون التصميم احترافي',  
-            'مطلوب توثيق شامل للكود',  
-            'يجب أن يكون التحليل دقيق ومفصل',  
-            'مطلوب عرض تقديمي مع التقرير',  
-            'يجب أن يكون العمل جاهز للعرض',  
-            'مطلوب مراجعة وتدقيق شامل'  
-        ];  
-
-        return $requirements[array_rand($requirements)];  
     }  
 }  
