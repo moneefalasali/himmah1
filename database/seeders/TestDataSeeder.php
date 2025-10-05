@@ -24,7 +24,7 @@ class TestDataSeeder extends Seeder
     {  
         // قائمة المستخدمين والدورات
         $userCourses = [
-            'mrym98900@gmail.com' => ['مبادئ الكيمياء التحليلية (ام القرى)'],
+            'mnal24033@gmail.com' => ['تطوير الويب جامعة طيبة'],
         ];
 
         foreach ($userCourses as $email => $courses) {
