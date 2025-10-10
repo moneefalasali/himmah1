@@ -24,7 +24,10 @@ class TestDataSeeder extends Seeder
     {  
         // قائمة المستخدمين والدورات
         $userCourses = [
-            'raghad721r@icloud.com' => ['مبادئ احصاء ( نجران )'],
+            'reuii97@gmail.com' => ['تصميم الشبكات اللاسلكية (جامعة الملك فيصل )'],
+            'e1840341@gmail.com' => ['تصميم الشبكات اللاسلكية (جامعة الملك فيصل )'],
+            'farah2@gmail.com' => ['تصميم الشبكات اللاسلكية (جامعة الملك فيصل )'],
+
         ];
 
         foreach ($userCourses as $email => $courses) {
