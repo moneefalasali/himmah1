@@ -24,8 +24,10 @@ class TestDataSeeder extends Seeder
     {  
         // قائمة المستخدمين والدورات
         $userCourses = [
-            'rasasirosol@gmail.com' => ['فيزياء عامة كلية البترجي'],
-            'amaln4217@gmail.com' => ['مبادئ ادارة اعمال جامعة الملك خالد'],
+            'rawanalabdali07@gmail.com' => ['اساسيات علم الاحياء ( تبوك )'],
+            'alblwymwd7@gmail.com' => ['اساسيات علم الاحياء ( تبوك )'],
+            '3bdulllah502@gmail.com' => ['فيزياء 2 ( حائل )'],
+            'sarahabdu007@gmail.com' => ['مبادئ محاسبة وتقرير مالي'],
 
 
 
