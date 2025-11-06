@@ -25,7 +25,7 @@ class TestDataSeeder extends Seeder
         // قائمة المستخدمين والدورات
         $userCourses = [
            
-            'tt0531033895mtt@gmail.com' => ['تصميم هندسي جازان'],
+            'asemalyrse@icloud.com' => ['اساسيات برمجة ++ c'],
 
 
 
