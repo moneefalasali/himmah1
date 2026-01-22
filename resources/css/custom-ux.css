@@ -1,0 +1,94 @@
+/* تحسينات تجربة المستخدم والواجهة لمنصة همة */
+:root {
+    --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+body {
+    font-family: '', sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+/* تحسين البطاقات (Cards) */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* تحسين الأزرار */
+.btn {
+    border-radius: 0.75rem;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+}
+
+/* تحسين النماذج (Forms) */
+.form-control, .form-select {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: #2563eb;
+}
+
+/* التوافق مع الجوال */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    .card {
+        margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 1.8rem; }
+    .btn { width: 100%; margin-bottom: 0.5rem; }
+}
+
+/* تحسين شريط التنقل */
+.navbar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 0;
+}
+
+/* Admin sidebar */
+.admin-sidebar {
+    border: 1px solid #eef2ff;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+.admin-sidebar .nav-link {
+    color: #334155;
+    margin-bottom: 0.25rem;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.admin-sidebar .nav-link:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    transform: translateX(-4px);
+}
+.admin-sidebar .nav-link .fas { width: 20px; }

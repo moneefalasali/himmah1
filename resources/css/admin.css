@@ -1,0 +1,108 @@
+/* Unified admin styles for all admin pages */
+:root{
+    --primary-50: #eef2ff;
+    --primary-500: #2563eb;
+    --primary-600: #1d4ed8;
+    --dark-color: #1e293b;
+    --muted: #64748b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --glass: rgba(255,255,255,0.85);
+    --shadow-sm: 0 2px 6px rgba(16,24,40,0.04);
+    --shadow-md: 0 8px 24px rgba(16,24,40,0.08);
+}
+
+html[dir="rtl"]{direction:rtl}
+body{
+    font-family: 'Segoe UI', Tahoma, system-ui, -apple-system, 'Helvetica Neue', Arial;
+    background: var(--bg);
+    color: #0f172a;
+    -webkit-font-smoothing:antialiased;
+}
+
+/* Top navbar */
+.admin-topbar{
+    /* blue header gradient with white text */
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+    color: #ffffff;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(2,6,23,0.06);
+    padding: 0.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+.admin-topbar .navbar-brand{font-weight:700;color:#fff;display:flex;align-items:center;gap:.6rem}
+.admin-topbar .nav-link{color:rgba(255,255,255,0.9)}
+.admin-topbar .nav-link:hover{color:#fff}
+
+/* logo sizing inside header */
+.admin-topbar .brand-logo{height:38px;width:auto;display:inline-block}
+
+/* header search */
+.admin-topbar .admin-search{min-width:260px}
+.admin-topbar .admin-search .form-control{border-radius:999px;padding:.45rem .9rem;border:none;background:#ffffff;color:var(--dark-color)}
+.admin-topbar .admin-search .form-control::placeholder{color:rgba(2,6,23,0.45)}
+.admin-topbar .admin-search .btn{background:rgba(255,255,255,0.12);border:none;color:#fff}
+.admin-topbar .admin-search .btn:hover{background:rgba(255,255,255,0.18)}
+
+/* avatar */
+.admin-topbar .admin-avatar{width:38px;height:38px;border-radius:999px;overflow:hidden;background:#fff;display:inline-block}
+.admin-topbar .admin-avatar img{width:100%;height:100%;object-fit:cover}
+
+/* Layout grid */
+.admin-container{padding:1.5rem 0}
+.admin-sidebar{background:#0b1220;color:#e6eef7;border-radius:0.75rem;padding:0.5rem;border:1px solid rgba(255,255,255,0.04)}
+.admin-sidebar .nav-link{color:rgba(230,238,247,0.9);display:flex;align-items:center;gap:.75rem;padding:.6rem .8rem;border-radius:.5rem}
+.admin-sidebar .nav-link:hover{background:rgba(255,255,255,0.03);color:#fff;transform:translateX(-6px)}
+.admin-sidebar .nav-link.active{background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));color:#fff;font-weight:600}
+.admin-sidebar .nav-link .fas{width:20px;text-align:center;color:rgba(255,255,255,0.8)}
+
+/* compact headers inside sidebar */
+.admin-sidebar .sidebar-header{display:flex;align-items:center;gap:.5rem;padding:.6rem .8rem;margin-bottom:.5rem}
+.admin-sidebar .sidebar-logo{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+
+/* Content area */
+.admin-content{min-height:60vh}
+.admin-breadcrumbs{margin-bottom:1rem}
+
+/* Cards and forms */
+.card{border:none;border-radius:0.75rem;background:var(--card-bg);box-shadow:var(--shadow-sm)}
+.card-header{background:transparent;border-bottom:none;padding:.9rem 1.25rem}
+.card-body{padding:1.25rem}
+.btn{border-radius:0.5rem}
+.btn-primary{background:linear-gradient(135deg,var(--primary-500),var(--primary-600));border:none}
+.form-control,.form-select{border-radius:0.5rem;border:1px solid #e6eef7;padding:.6rem .9rem}
+
+/* Alerts */
+.alert-admin{border-radius:0.6rem;padding:.7rem 1rem;box-shadow:var(--shadow-sm)}
+
+/* Responsive tweaks */
+@media (max-width: 768px){
+    .admin-sidebar{order:2;margin-top:0.75rem}
+}
+
+/* small utilities */
+.text-muted-xs{color:var(--muted);font-size:.9rem}
+
+/* Ensure font-awesome icons align */
+.fa-fw{width:1.5em;text-align:center}
+
+/* Admin footer */
+.admin-footer{
+    /* black footer with white text */
+    background: #000000;
+    color: #ffffff;
+    padding: 1rem 0.75rem;
+}
+.admin-footer .footer-inner{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.admin-footer a{color:rgba(255,255,255,0.95);text-decoration:none}
+.admin-footer a:hover{color:#fff;opacity:0.9;text-decoration:underline}
+.admin-footer small{color:rgba(255,255,255,0.85)}
+.admin-footer .footer-col{display:flex;flex-direction:column;gap:0.25rem}
+.admin-footer .socials a{color:rgba(255,255,255,0.95);margin-left:.5rem}
+
+@media (max-width:768px){
+    .admin-footer .footer-inner{flex-direction:column;align-items:flex-start}
+    .admin-footer .socials{margin-top:.5rem}
+}
