@@ -27,7 +27,7 @@ class TeacherCourseController extends Controller
 {
     protected $imageService;
 
-    public function __construct(ImageService $imageService = null)
+    public function __construct(?ImageService $imageService)
     {
         $this->imageService = $imageService;
         // enforce policy-based authorization on resource routes where possible
