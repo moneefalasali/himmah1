@@ -255,4 +255,67 @@ class AdminCourseController extends Controller
 
         return view('admin.courses.show', compact('course', 'stats'));
     }
+
+    /**
+     * Show edit form for a course
+     */
+    public function edit(Course $course)
+    {
+        $categories = Category::all();
+        $subjects = \App\Models\Subject::all();
+        $universities = \App\Models\University::all();
+
+        if ($course->image && $this->imageService) {
+            $course->image_url = $this->imageService->getUrl($course->image);
+        }
+
+        return view('admin.courses.edit', compact('course', 'categories', 'subjects', 'universities'));
+    }
+
+    /**
+     * Update an existing course
+     */
+    public function update(Request $request, Course $course)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'nullable|numeric',
+            'instructor_name' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive',
+            'category_id' => 'nullable|exists:categories,id',
+            'subject_id' => 'nullable|exists:subjects,id',
+            'subject_name' => 'nullable|string|max:255',
+            'university_id' => 'nullable|exists:universities,id',
+            'duration' => 'nullable|integer',
+            'image' => 'nullable|image|max:5120',
+        ]);
+
+        $data = $request->only(['title', 'description', 'price', 'instructor_name', 'status', 'duration', 'category_id', 'university_id']);
+
+        if ($request->filled('subject_id')) {
+            $data['subject_id'] = $request->subject_id;
+        } elseif ($request->filled('subject_name')) {
+            $subjectName = trim($request->subject_name);
+            $subject = \App\Models\Subject::firstOrCreate(
+                ['name' => $subjectName],
+                ['category_id' => $request->category_id ?? null, 'slug' => \Illuminate\Support\Str::slug($subjectName)]
+            );
+            $data['subject_id'] = $subject->id;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($course->image && $this->imageService) {
+                $this->imageService->deleteImage($course->image);
+            }
+            $path = $this->imageService->uploadImage($request->file('image'), 'courses');
+            if ($path) {
+                $data['image'] = $path;
+            }
+        }
+
+        $course->update($data);
+
+        return redirect()->route('admin.courses.index')->with('success', 'تم تحديث الدورة بنجاح');
+    }
 }
