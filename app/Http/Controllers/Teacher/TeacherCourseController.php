@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\University;
 use App\Models\Category;
 use App\Models\Subject;
+use Illuminate\Support\Str;
 use App\Services\ImageService;
 use Illuminate\Support\Facades\Auth;
 
@@ -143,7 +144,28 @@ class TeacherCourseController extends Controller
         $data['user_id'] = Auth::id();
 
         if ($request->filled('subject_name')) {
-            $subject = Subject::firstOrCreate(['name' => $request->get('subject_name')]);
+            $subjectName = $request->get('subject_name');
+
+            // Prefer an explicitly provided category_id; fall back to first category or create a default one.
+            $categoryId = $request->get('category_id');
+            if (!$categoryId) {
+                $firstCategory = Category::first();
+                if ($firstCategory) {
+                    $categoryId = $firstCategory->id;
+                } else {
+                    $default = Category::firstOrCreate([
+                        'name' => 'عام',
+                        'slug' => Str::slug('عام')
+                    ]);
+                    $categoryId = $default->id;
+                }
+            }
+
+            $subject = Subject::firstOrCreate(
+                ['name' => $subjectName],
+                ['category_id' => $categoryId, 'slug' => Str::slug($subjectName)]
+            );
+
             $data['subject_id'] = $subject->id;
         }
 
@@ -183,7 +205,27 @@ class TeacherCourseController extends Controller
         $data = $request->all();
 
         if ($request->filled('subject_name')) {
-            $subject = Subject::firstOrCreate(['name' => $request->get('subject_name')]);
+            $subjectName = $request->get('subject_name');
+
+            $categoryId = $request->get('category_id');
+            if (!$categoryId) {
+                $firstCategory = Category::first();
+                if ($firstCategory) {
+                    $categoryId = $firstCategory->id;
+                } else {
+                    $default = Category::firstOrCreate([
+                        'name' => 'عام',
+                        'slug' => Str::slug('عام')
+                    ]);
+                    $categoryId = $default->id;
+                }
+            }
+
+            $subject = Subject::firstOrCreate(
+                ['name' => $subjectName],
+                ['category_id' => $categoryId, 'slug' => Str::slug($subjectName)]
+            );
+
             $data['subject_id'] = $subject->id;
         }
 
