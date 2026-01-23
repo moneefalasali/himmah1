@@ -99,8 +99,11 @@ class WasabiUploader {
             try {
                 const resp = await fetch(ep, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     },
                     body: JSON.stringify(payload)
@@ -109,6 +112,13 @@ class WasabiUploader {
                 const contentType = resp.headers.get('Content-Type') || '';
 
                 if (!resp.ok) {
+                    // If server redirected to login or returned an HTML error (e.g., 419),
+                    // try to return any JSON payload, otherwise continue to next endpoint.
+                    if (resp.status === 419) {
+                        // CSRF / session expired
+                        try { return await resp.json(); } catch (e) { return { ok: false, message: 'Authentication or CSRF error (status 419)'}; }
+                    }
+
                     if (contentType.includes('application/json')) {
                         try { return await resp.json(); } catch (e) { continue; }
                     }
