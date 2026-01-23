@@ -111,17 +111,15 @@ class WasabiUploader {
 
                 const contentType = resp.headers.get('Content-Type') || '';
 
+                // Only accept a JSON response if the HTTP status is successful.
+                // If the endpoint returned an error (401/403/4xx/5xx) but with JSON,
+                // skip it and try the next endpoint — this allows trying the admin
+                // presign endpoint when the teacher endpoint rejects admin users.
                 if (!resp.ok) {
-                    // If server redirected to login or returned an HTML error (e.g., 419),
-                    // try to return any JSON payload, otherwise continue to next endpoint.
                     if (resp.status === 419) {
-                        // CSRF / session expired
                         try { return await resp.json(); } catch (e) { return { ok: false, message: 'Authentication or CSRF error (status 419)'}; }
                     }
-
-                    if (contentType.includes('application/json')) {
-                        try { return await resp.json(); } catch (e) { continue; }
-                    }
+                    // skip error responses (including JSON error bodies) to try next endpoint
                     continue;
                 }
 
