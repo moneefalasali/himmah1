@@ -110,6 +110,9 @@ class AdminCourseController extends Controller
             'section_id' => $request->section_id ?: null,
             'description' => $request->description ?: null,
             'duration' => $request->duration ?: null,
+            'video_url' => '',
+            'video_path' => null,
+            'video_platform' => null,
             'is_free' => $request->has('is_free') ? (bool)$request->is_free : false,
         ];
 
