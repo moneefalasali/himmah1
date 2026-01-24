@@ -131,7 +131,7 @@ class AdminCourseController extends Controller
         } elseif ($request->video_platform === 'wasabi') {
             // Support either a direct uploaded file or a previously assembled+uploaded path from chunk uploader
             $lesson->video_platform = 'wasabi';
-            $lesson->status = 'processing';
+            $lesson->processing_status = 'processing';
             $lesson->save();
 
             if ($request->filled('video_path')) {
