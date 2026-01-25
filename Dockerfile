@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
     vim \
     nano \
     nodejs \
-    npm
+    npm \
+    ffmpeg
 
 # تنظيف الكاش
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
