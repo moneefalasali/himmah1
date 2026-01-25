@@ -25,9 +25,8 @@ class WasabiUploader {
             const csrfMeta = document.querySelector('meta[name="csrf-token"]');
             const csrfToken = csrfMeta ? (csrfMeta.getAttribute('content') || csrfMeta.content) : (window.csrfToken || '');
 
+            // Use unified presign endpoint only (centralized under /video/presign)
             const initiateEndpoints = [
-                '/teacher/video/presign/initiate',
-                '/admin/video/presign/initiate',
                 '/video/presign/initiate'
             ];
 
@@ -61,8 +60,6 @@ class WasabiUploader {
 
             // 3. Complete Upload
             const completeEndpoints = [
-                '/teacher/video/presign/complete',
-                '/admin/video/presign/complete',
                 '/video/presign/complete'
             ];
 
@@ -95,41 +92,54 @@ class WasabiUploader {
 
     // Try posting to multiple endpoints until one returns JSON success
     async _tryPostJsonEndpoints(endpoints, payload, csrfToken) {
+        // Try each endpoint with a few retries for transient failures (e.g., 499)
         for (let ep of endpoints) {
-            try {
-                const resp = await fetch(ep, {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    },
-                    body: JSON.stringify(payload)
-                });
+            let attempts = 0;
+            while (attempts < 3) {
+                attempts++;
+                try {
+                    const resp = await fetch(ep, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-                const contentType = resp.headers.get('Content-Type') || '';
+                    const contentType = resp.headers.get('Content-Type') || '';
 
-                // Only accept a JSON response if the HTTP status is successful.
-                // If the endpoint returned an error (401/403/4xx/5xx) but with JSON,
-                // skip it and try the next endpoint — this allows trying the admin
-                // presign endpoint when the teacher endpoint rejects admin users.
-                if (!resp.ok) {
-                    if (resp.status === 419) {
-                        try { return await resp.json(); } catch (e) { return { ok: false, message: 'Authentication or CSRF error (status 419)'}; }
+                    if (!resp.ok) {
+                        // Return JSON body on CSRF (419) so caller can surface it
+                        if (resp.status === 419) {
+                            try { return await resp.json(); } catch (e) { return { ok: false, message: 'Authentication or CSRF error (status 419)'}; }
+                        }
+                        // For transient client-abort/server-timeout (499) or 502/503, retry
+                        if ([499, 502, 503, 504].includes(resp.status) && attempts < 3) {
+                            await new Promise(r => setTimeout(r, 500 * attempts));
+                            continue;
+                        }
+                        // otherwise skip to next endpoint
+                        break;
                     }
-                    // skip error responses (including JSON error bodies) to try next endpoint
-                    continue;
-                }
 
-                if (contentType.includes('application/json')) {
-                    return await resp.json();
+                    if (contentType.includes('application/json')) {
+                        return await resp.json();
+                    }
+                    // non-json successful response: skip
+                    break;
+                } catch (e) {
+                    // network error or thrown - retry a couple times
+                    if (attempts < 3) {
+                        await new Promise(r => setTimeout(r, 500 * attempts));
+                        continue;
+                    }
+                    console.warn('Endpoint failed', ep, e);
+                    break;
                 }
-                // non-json successful response: skip
-            } catch (e) {
-                console.warn('Endpoint failed', ep, e);
-                continue;
             }
         }
         return null;
