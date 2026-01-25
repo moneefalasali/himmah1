@@ -136,7 +136,8 @@ class AdminCourseController extends Controller
 
             if ($request->filled('video_path')) {
                 // Frontend chunk uploader returned a Wasabi path
-                $lesson->video_url = $request->video_path;
+                // Safely coalesce null/empty to an empty string to avoid DB NOT NULL errors
+                $lesson->video_url = $request->input('video_path') ?: '';
                 $lesson->save();
                 // Optionally dispatch processing job for HLS or other processing
                 // dispatch(new \App\Jobs\ProcessVideoHLS($lesson));
@@ -146,7 +147,7 @@ class AdminCourseController extends Controller
                 $localPath = $file->getRealPath();
                 try {
                     $remotePath = $this->videoService->uploadRawToWasabi($localPath, $lesson->id);
-                    $lesson->video_url = $remotePath;
+                        $lesson->video_url = $remotePath ?: '';
                     $lesson->save();
                     // Optionally dispatch processing job
                     // dispatch(new \App\Jobs\ProcessVideoHLS($lesson));

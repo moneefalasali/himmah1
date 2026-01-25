@@ -82,10 +82,11 @@ class TeacherLessonController extends Controller
         $maxOrder = $course->lessons()->max('order') ?? 0;
 
         // 2. إنشاء سجل الدرس مع الحقول المتوافقة مع قاعدة البيانات
-        $lessonData = [
+                $lessonData = [
             'title' => $request->title,
             'description' => $request->description ?? null,
             'video_path' => $path,
+            // coalesce to empty string to avoid NOT NULL DB errors
             'video_url' => $url ?? '',
             'video_platform' => $platform ?? ($path ? 'wasabi' : null),
             'duration' => $request->duration ?? null,
