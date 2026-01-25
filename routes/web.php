@@ -163,8 +163,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // New Video System Routes (Admin)
     Route::get('/video/drive/proxy/{fileId}', [\App\Http\Controllers\GoogleDriveController::class, 'proxy'])->name('admin.video.drive.proxy');
-    Route::post('/video/presign/initiate', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'initiate'])->name('video.presign.initiate');
-    Route::post('/video/presign/complete', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'complete'])->name('video.presign.complete');
 
     Route::resource('courses', AdminCourseController::class);
     Route::get('/courses/{course}/lessons', [AdminCourseController::class, 'lessons'])->name('courses.lessons');
@@ -397,9 +395,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/courses/{course}/sections/{section}', [\App\Http\Controllers\Teacher\TeacherCourseController::class, 'destroySection'])->name('courses.sections.destroy');
         // Teacher lesson uploads
         Route::post('/courses/{course}/lessons', [\App\Http\Controllers\Teacher\TeacherLessonController::class, 'store'])->name('lessons.store');
-        // Direct-to-Wasabi presigned multipart endpoints (teacher)
-        Route::post('/video/presign/initiate', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'initiate'])->name('video.presign.initiate');
-        Route::post('/video/presign/complete', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'complete'])->name('video.presign.complete');
+        // Teacher lesson uploads
+        // (presign endpoints are defined centrally under authenticated routes)
         
         // إدارة الحصص المباشرة للمعلم
         Route::resource('live-sessions', TeacherLiveSessionController::class);
@@ -428,3 +425,11 @@ Route::middleware(['auth'])->group(function () {
 if (config('app.debug')) {
     Route::get('/dev/wasabi-test', [\App\Http\Controllers\Dev\WasabiTestController::class, 'index'])->name('dev.wasabi.test');
 }
+
+// Unified presign endpoints: authenticated users (teachers or admins) allowed
+Route::middleware(['auth'])->group(function () {
+    Route::post('/video/presign/initiate', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'initiate'])
+        ->name('video.presign.initiate');
+    Route::post('/video/presign/complete', [\App\Http\Controllers\Teacher\VideoPresignController::class, 'complete'])
+        ->name('video.presign.complete');
+});

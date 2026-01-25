@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\VideoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class VideoPresignController extends Controller
@@ -22,6 +23,11 @@ class VideoPresignController extends Controller
      */
     public function initiate(Request $request)
     {
+        // authorize: allow teachers and admins
+        if (! Auth::check() || (! Auth::user()->isTeacher() && ! Auth::user()->isAdmin())) {
+            abort(403, 'غير مصرح لك ببدء رفع الفيديو.');
+        }
+
         $request->validate([
             'filename' => 'required|string',
             'parts' => 'required|integer|min:1|max:10000',
@@ -59,6 +65,11 @@ class VideoPresignController extends Controller
      */
     public function complete(Request $request)
     {
+        // authorize: allow teachers and admins
+        if (! Auth::check() || (! Auth::user()->isTeacher() && ! Auth::user()->isAdmin())) {
+            abort(403, 'غير مصرح لك بإتمام رفع الفيديو.');
+        }
+
         $request->validate([
             'uploadId' => 'required|string',
             'key' => 'required|string',
