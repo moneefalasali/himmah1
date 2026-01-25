@@ -13,5 +13,8 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'webhooks/zoom',
+        'teacher/video/presign/*',
+        'admin/video/presign/*',
+        'video/presign/*',
     ];
 }
