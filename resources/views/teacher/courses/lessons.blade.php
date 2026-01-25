@@ -192,11 +192,10 @@
                 </div>
                 <form action="{{ route('teacher.lessons.store', $course) }}" method="POST" id="addLessonForm" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="section_id" id="lesson_section_id">
                     <input type="hidden" name="video_path" id="video_path_input">
                     <div class="mb-3">
                         <label for="lesson_section_select" class="form-label">اختر القسم (اختياري)</label>
-                        <select id="lesson_section_select" class="form-select">
+                        <select id="lesson_section_select" name="section_id" class="form-select">
                             <option value="">- بدون قسم -</option>
                             @foreach($course->sections as $section)
                                 <option value="{{ $section->id }}">{{ $section->title }}</option>
@@ -371,14 +370,8 @@
                 });
             }
 
-            // Mirror section select into hidden input
+            // No mirror needed — select now submits `section_id` directly
             const sectionSelect = document.getElementById('lesson_section_select');
-            const sectionHidden = document.getElementById('lesson_section_id');
-            if (sectionSelect && sectionHidden) {
-                sectionSelect.addEventListener('change', function() {
-                    sectionHidden.value = this.value;
-                });
-            }
         });
 
         function editSection(id, title) {
