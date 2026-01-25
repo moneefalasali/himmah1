@@ -21,7 +21,15 @@ class TeacherLessonController extends Controller
     }
     public function store(Request $request, Course $course)
     {
-        $request->validate([
+        // log incoming request for debugging
+        Log::info('TeacherLessonController::store incoming', [
+            'course_id' => $course->id,
+            'user_id' => auth()->id(),
+            'input' => $request->all(),
+        ]);
+
+        try {
+            $request->validate([
             'title' => 'required|string|max:255',
             'video' => 'nullable|file|mimetypes:video/mp4,video/quicktime,video/x-msvideo,video/x-ms-wmv|max:2097152', // up to 2GB (in KB)
             'video_path' => 'nullable|string',
@@ -32,6 +40,18 @@ class TeacherLessonController extends Controller
             'section_id' => 'nullable|exists:sections,id',
             'is_free' => 'nullable|boolean',
         ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('TeacherLessonController::store validation_failed', [
+                'course_id' => $course->id,
+                'user_id' => auth()->id(),
+                'errors' => $e->errors(),
+                'input' => $request->all(),
+            ]);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['errors' => $e->errors()], 422);
+            }
+            throw $e;
+        }
 
         // Determine source: external URL / Vimeo ID / already-uploaded path / file upload
         $path = null;
