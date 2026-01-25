@@ -36,7 +36,8 @@ class TeacherLessonController extends Controller
             'video_url' => 'nullable|url',
             'vimeo_video_id' => 'nullable|string',
             'description' => 'nullable|string',
-            'duration' => 'nullable|integer|min:1',
+            // allow 0 (unknown) from client; we'll coerce 0 to null later
+            'duration' => 'nullable|integer|min:0',
             'section_id' => 'nullable|exists:sections,id',
             'is_free' => 'nullable|boolean',
         ]);
@@ -103,14 +104,22 @@ class TeacherLessonController extends Controller
         $maxOrder = $course->lessons()->max('order') ?? 0;
 
         // 2. إنشاء سجل الدرس مع الحقول المتوافقة مع قاعدة البيانات
+                // coerce duration: treat 0 or negative as null (unknown)
+                $rawDuration = $request->input('duration');
+                $durationVal = null;
+                if ($rawDuration !== null && $rawDuration !== '') {
+                    $intDuration = (int) $rawDuration;
+                    $durationVal = $intDuration > 0 ? $intDuration : null;
+                }
+
                 $lessonData = [
             'title' => $request->title,
             'description' => $request->description ?? null,
             'video_path' => $path,
             // coalesce to empty string to avoid NOT NULL DB errors
-            'video_url' => $url ?? '',
+                    'video_url' => $url ?? '',
             'video_platform' => $platform ?? ($path ? 'wasabi' : null),
-            'duration' => $request->duration ?? null,
+                    'duration' => $durationVal,
             'section_id' => $request->section_id ?: null,
             'is_free' => $request->has('is_free') ? (bool)$request->is_free : false,
             'order' => $maxOrder + 1,
