@@ -336,6 +336,29 @@
                 });
             }
 
+            // Prevent form submit while Wasabi upload is in progress
+            const addLessonForm = document.getElementById('addLessonForm');
+            if (addLessonForm) {
+                addLessonForm.addEventListener('submit', function(e) {
+                    const platform = document.getElementById('video_platform').value;
+                    // if Wasabi selected and an upload is ongoing, block submit
+                    if (platform === 'wasabi') {
+                        if (window.WasabiUploaderIsUploading && window.WasabiUploaderIsUploading()) {
+                            e.preventDefault();
+                            alert('الرجاء الانتظار حتى يكتمل رفع الفيديو قبل حفظ الدرس.');
+                            return false;
+                        }
+                        // if no video_path is set but a file was chosen, prevent accidental submit
+                        const fileChosen = (videoFileInput && videoFileInput.files && videoFileInput.files.length > 0);
+                        if (fileChosen && (!videoPathInput.value || videoPathInput.value === '')) {
+                            e.preventDefault();
+                            alert('لم يكتمل رفع الفيديو بعد. تأكد من اكتمال الرفع ثم أعد المحاولة.');
+                            return false;
+                        }
+                    }
+                });
+            }
+
             // Handle Google Drive ID extraction
             const driveUrlInput = document.getElementById('google_drive_url');
             if (driveUrlInput) {

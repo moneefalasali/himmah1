@@ -14,10 +14,14 @@ class WasabiUploader {
         this.uploadId = null;
         this.key = null;
         this.parts = [];
+        this.isUploading = false;
     }
 
     async start() {
         try {
+            this.isUploading = true;
+            // expose current uploader for external checks
+            try { window.WasabiUploaderCurrent = this; } catch(e) {}
             const totalParts = Math.ceil(this.file.size / this.chunkSize);
             
             // 1. Initiate Upload
@@ -68,13 +72,16 @@ class WasabiUploader {
                 key: this.key,
                 parts: this.parts
             }, csrfToken);
-
             if (!completeData || !completeData.ok) throw new Error(completeData && completeData.message ? completeData.message : 'Failed to complete upload');
 
             this.onSuccess(completeData);
+            this.isUploading = false;
+            try { window.WasabiUploaderCurrent = null; } catch(e) {}
         } catch (error) {
             console.error('Upload failed:', error);
             this.onError(error);
+            this.isUploading = false;
+            try { window.WasabiUploaderCurrent = null; } catch(e) {}
         }
     }
 
@@ -147,3 +154,10 @@ class WasabiUploader {
 }
 
 window.WasabiUploader = WasabiUploader;
+
+// helper to check if there's an active upload
+window.WasabiUploaderIsUploading = function() {
+    try {
+        return !!(window.WasabiUploaderCurrent && window.WasabiUploaderCurrent.isUploading);
+    } catch(e) { return false; }
+};
