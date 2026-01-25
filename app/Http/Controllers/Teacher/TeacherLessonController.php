@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Jobs\ProcessVideoHLS;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class TeacherLessonController extends Controller
 {
@@ -104,7 +105,16 @@ class TeacherLessonController extends Controller
             $lessonData['processing_status'] = 'pending';
         }
 
+        // temporary debug logging to help diagnose missing lesson saves in production
+        Log::info('TeacherLessonController::store payload', [
+            'course_id' => $course->id,
+            'user_id' => auth()->id(),
+            'lessonData' => $lessonData,
+        ]);
+
         $lesson = $course->lessons()->create($lessonData);
+
+        Log::info('TeacherLessonController::store created', ['lesson_id' => $lesson->id ?? null, 'course_id' => $course->id]);
 
         // 3. إرسال مهمة معالجة HLS للخلفية إن وُجدت مسار الفيديو
         if ($path) {
