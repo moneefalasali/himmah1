@@ -58,6 +58,10 @@
                                 </small>
                             </div>
                             <div>
+                                @if($lesson->is_free)
+                                    <span class="badge bg-success me-1">مجاني</span>
+                                @endif
+
                                 @if($lesson->progress && $lesson->progress->completed)
                                     <span class="badge bg-success">مكتمل</span>
                                 @else
@@ -87,6 +91,10 @@
                                         </small>
                                     </div>
                                     <div>
+                                        @if($lesson->is_free)
+                                            <span class="badge bg-success me-1">مجاني</span>
+                                        @endif
+
                                         @if($lesson->progress && $lesson->progress->completed)
                                             <span class="badge bg-success">مكتمل</span>
                                         @else
@@ -102,6 +110,39 @@
                         <i class="fas fa-info-circle me-2"></i> لم يتم إضافة مناهج دراسية لهذه الدورة بعد.
                     </div>
                 @endforelse
+                {{-- دروس بدون قسم --}}
+                @if(isset($lessonsWithoutSection) && $lessonsWithoutSection->count() > 0)
+                    <div class="mt-4">
+                        <h5 class="mb-3">دروس بدون قسم</h5>
+                        <ul class="list-group">
+                            @foreach($lessonsWithoutSection as $lesson)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
+                                            <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
+                                        </a>
+                                        <small class="d-block text-muted ms-4">
+                                            @if($lesson->duration)
+                                                {{ $lesson->formatted_duration }}
+                                            @endif
+                                        </small>
+                                    </div>
+                                    <div>
+                                        @if($lesson->is_free)
+                                            <span class="badge bg-success me-1">مجاني</span>
+                                        @endif
+
+                                        @if($lesson->progress && $lesson->progress->completed)
+                                            <span class="badge bg-success">مكتمل</span>
+                                        @else
+                                            <span class="badge bg-secondary">غير مكتمل</span>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             @endif
         </div>
     </div>

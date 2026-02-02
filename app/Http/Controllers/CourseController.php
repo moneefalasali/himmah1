@@ -108,6 +108,9 @@ class CourseController extends Controller
             }
         ]);
 
-        return view('courses.curriculum', compact('course'));
+        // Also fetch lessons that are not assigned to any section so we can display them
+        $lessonsWithoutSection = $course->lessons()->whereNull('section_id')->orderBy('order')->get();
+
+        return view('courses.curriculum', compact('course', 'lessonsWithoutSection'));
     }
 }

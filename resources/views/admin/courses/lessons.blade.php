@@ -83,10 +83,13 @@
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-1">
-                                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                                            onclick="editLesson({{ $lesson->id }})" title="تعديل">
-                                                                        <i class="bi bi-pencil"></i>
-                                                                    </button>
+                                                                        <a href="{{ route('lessons.show', $lesson) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="معاينة">
+                                                                            <i class="bi bi-eye"></i>
+                                                                        </a>
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                                                onclick="editLesson({{ $lesson->id }})" title="تعديل">
+                                                                            <i class="bi bi-pencil"></i>
+                                                                        </button>
                                                                     <form action="{{ route('admin.courses.lessons.destroy', [$course, $lesson]) }}" 
                                                                           method="POST" class="d-inline">
                                                                         @csrf

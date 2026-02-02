@@ -78,6 +78,9 @@
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex gap-1">
+                                                                    <a href="{{ route('lessons.show', $lesson) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="معاينة">
+                                                                        <i class="bi bi-eye"></i>
+                                                                    </a>
                                                                     <button type="button" class="btn btn-sm btn-outline-primary" 
                                                                             onclick="editLesson({{ $lesson->id }})" title="تعديل">
                                                                         <i class="bi bi-pencil"></i>
@@ -237,7 +240,7 @@
                                 <!-- Wasabi Upload -->
                                 <div id="source_wasabi" class="video-source-fields">
                                     <label class="form-label">اختر ملف الفيديو</label>
-                                    <input type="file" name="video_file" id="video_file" class="form-control" accept="video/*">
+                                    <input type="file" name="video" id="video_file" class="form-control" accept="video/*">
                                     <div id="upload_progress_container" class="mt-3" style="display:none;">
                                         <div class="progress mb-2" style="height: 20px;">
                                             <div id="upload_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>

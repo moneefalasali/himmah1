@@ -39,7 +39,8 @@ class TeacherLessonController extends Controller
             // allow 0 (unknown) from client; we'll coerce 0 to null later
             'duration' => 'nullable|integer|min:0',
             'section_id' => 'nullable|exists:sections,id',
-            'is_free' => 'nullable|boolean',
+            // checkbox may submit 'on' string; accept common boolean-like values
+            'is_free' => 'nullable|in:0,1,yes,no,true,false,on,off',
         ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('TeacherLessonController::store validation_failed', [
