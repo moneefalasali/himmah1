@@ -19,8 +19,10 @@
 
             @php
                 $user = auth()->user();
-                $canView = false;
-                if ($user) {
+                // Allow viewing if lesson is free for everyone
+                $canView = $lesson->is_free ? true : false;
+
+                if (!$canView && $user) {
                     if ($user->isAdmin()) $canView = true;
                     if ($user->isTeacher() && $lesson->course->user_id === $user->id) $canView = true;
                     if ($user->isEnrolledIn($lesson->course)) $canView = true;
