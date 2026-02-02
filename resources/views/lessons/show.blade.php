@@ -34,134 +34,120 @@
                     @endphp
 
                     @if($lesson->video_platform === 'wasabi')
-                            @php
+                        @php
                             $hlsReady = ($lesson->processing_status === 'completed' && !empty($lesson->hls_path));
-                            $videoUrl = null;
-                            if ($hlsReady) {
-                                $videoUrl = $videoService->getWasabiSignedUrl($lesson->hls_path);
-                            } elseif (!empty($lesson->video_path)) {
-                                $videoUrl = $videoService->getWasabiSignedUrl($lesson->video_path);
-                            }
-                            // Ensure no HTML entities (e.g., &amp;) remain in the signed URL
-                            if (!empty($videoUrl)) {
-                                $videoUrl = html_entity_decode($videoUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-                            }
                         @endphp
 
-                        @if($videoUrl)
+                        @if($hlsReady || !empty($lesson->video_path))
                             <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
 
                             <style>
-                                /* Make player fill the available frame and show controls on hover */
                                 .lesson-player .video-js { width:100%; height:100%; }
-                                .lesson-player .vjs-control { opacity: 0; transition: opacity .15s ease; }
-                                .lesson-player:hover .vjs-control, .lesson-player .vjs-control.vjs-hidden { opacity: 1; }
-                                .player-toolbar { position: absolute; top: 8px; right: 8px; z-index: 6; }
+                                .player-toolbar { position: absolute; top: 8px; right: 8px; z-index: 6; display:flex; gap:8px; align-items:center; }
                                 .player-container { position: relative; width:100%; height:100%; }
+                                .watermark-overlay { position:absolute; bottom:8px; left:8px; z-index:6; color:rgba(255,255,255,0.8); font-size:12px; }
+                                .player-controls-btn { min-width:36px; }
                             </style>
 
-                            <div class="player-container lesson-player">
-                                    <div class="ratio ratio-16x9 bg-dark rounded shadow-sm overflow-hidden">
-                                    <video id="hls-player" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" playsinline muted autoplay>
-                                        <p class="vjs-no-js">لمشاهدة هذا الفيديو، يرجى تفعيل JavaScript وتحديث المتصفح.</p>
-                                    </video>
+                            <div class="player-container lesson-player" data-video-source="wasabi" data-stream-endpoint="{{ route('lessons.stream_url', $lesson) }}" data-hls-ready="{{ $hlsReady ? 1 : 0 }}">
+                                <div class="ratio ratio-16x9 bg-dark rounded shadow-sm overflow-hidden">
+                                    <video id="hls-player" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" playsinline muted autoplay controlsList="nodownload nofullscreen noremoteplayback" disablePictureInPicture oncontextmenu="return false;"></video>
                                 </div>
+
                                 <div class="player-toolbar">
+                                    <button id="back10" class="btn btn-sm btn-outline-light player-controls-btn">⏪ 10</button>
+                                    <button id="forward10" class="btn btn-sm btn-outline-light player-controls-btn">10 ⏩</button>
+                                    <select id="playbackRate" class="form-select form-select-sm">
+                                        <option value="0.5">0.5x</option>
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1" selected>1x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="2">2x</option>
+                                    </select>
                                     <button id="cinemaToggle" class="btn btn-sm btn-outline-light">وضع السينما</button>
                                 </div>
+
+                                <div id="playerWatermark" class="watermark-overlay" aria-hidden="true"></div>
                             </div>
 
                             <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
                             <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+
                             <script>
+                                // Unified playback controls for Wasabi HLS via Video.js + hls.js
                                 (function(){
-                                    const src = @json($videoUrl);
-                                    const isHls = @json($hlsReady);
-                                       // Removed debug logging and on-page display of signed URL
-                                    const player = videojs('hls-player', {
-                                        controls: true,
-                                        fluid: true,
-                                        preload: 'auto',
-                                        autoplay: true,
-                                        muted: true
-                                    });
+                                    const container = document.querySelector('.player-container[data-video-source="wasabi"]');
+                                    if (!container) return;
 
-                                    // Initialize when player ready to access the underlying video element
-                                    player.ready(function() {
-                                        let tech = null;
-                                        try { tech = player.tech({ IWillNotUseThisInPlugins: true }); } catch(e) { tech = null; }
-                                        const videoEl = tech && typeof tech.el === 'function' ? tech.el() : document.getElementById('hls-player');
+                                    const streamEndpoint = container.dataset.streamEndpoint;
+                                    const isHls = container.dataset.hlsReady === '1';
+                                    const player = videojs('hls-player', { controls: true, fluid: true, preload: 'auto', autoplay: true, muted: true });
 
-                                        if (!src) {
-                                            console.warn('No video URL provided');
+                                    // Protection: do not place signed URLs in page source; fetch them from server
+                                    async function fetchStreamUrl() {
+                                        try {
+                                            const res = await fetch(streamEndpoint, { credentials: 'same-origin' });
+                                            if (!res.ok) throw new Error('Failed to get stream URL');
+                                            return await res.json();
+                                        } catch (err) {
+                                            console.error('Unable to fetch stream URL', err);
+                                            return null;
+                                        }
+                                    }
+
+                                    async function init() {
+                                        const data = await fetchStreamUrl();
+                                        if (!data || !data.stream_url) {
+                                            container.querySelector('.ratio').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-white p-3"><p>الفيديو قيد المعالجة أو غير متاح حالياً.</p></div>';
                                             return;
                                         }
 
-                                        // If this lesson provides HLS, use hls.js (or native HLS). Otherwise load the MP4 directly.
-                                        if (isHls) {
-                                            if (window.Hls && Hls.isSupported()) {
-                                                const hls = new Hls();
-                                                hls.on(Hls.Events.ERROR, function(event, data) { console.error('HLS error', data); });
-                                                hls.loadSource(src);
-                                                hls.attachMedia(videoEl);
-                                                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                                                    try { player.src({ src: src, type: 'application/x-mpegURL' }); } catch(e) {}
-                                                });
-                                            } else if (videoEl && videoEl.canPlayType && (videoEl.canPlayType('application/vnd.apple.mpegurl') || videoEl.canPlayType('application/x-mpegURL'))) {
-                                                player.src({ src: src, type: 'application/x-mpegURL' });
+                                        const src = data.stream_url;
+                                        // Watermark text from server (keeps protection intact; server stamps or provides allowed info)
+                                        if (data.watermark && data.watermark.text) {
+                                            const wm = document.getElementById('playerWatermark');
+                                            wm.textContent = data.watermark.text;
+                                        }
+
+                                        player.ready(function() {
+                                            let tech = null;
+                                            try { tech = player.tech({ IWillNotUseThisInPlugins: true }); } catch(e) { tech = null; }
+                                            const videoEl = tech && typeof tech.el === 'function' ? tech.el() : document.getElementById('hls-player');
+
+                                            if (isHls) {
+                                                if (window.Hls && Hls.isSupported()) {
+                                                    const hls = new Hls({ enableWorker: true });
+                                                    hls.on(Hls.Events.ERROR, function(event, data) { console.error('HLS error', data); });
+                                                    hls.loadSource(src);
+                                                    hls.attachMedia(videoEl);
+                                                    hls.on(Hls.Events.MANIFEST_PARSED, function() { try { player.src({ src: src, type: 'application/x-mpegURL' }); } catch(e) {} });
+                                                } else if (videoEl && videoEl.canPlayType && (videoEl.canPlayType('application/vnd.apple.mpegurl') || videoEl.canPlayType('application/x-mpegURL'))) {
+                                                    player.src({ src: src, type: 'application/x-mpegURL' });
+                                                } else {
+                                                    console.error('HLS requested but not supported by browser');
+                                                    player.src({ src: src, type: 'video/mp4' });
+                                                }
                                             } else {
-                                                console.error('HLS requested but not supported by browser');
-                                                // fall back to MP4 if available
                                                 player.src({ src: src, type: 'video/mp4' });
                                             }
-                                        } else {
-                                            // Non-HLS (MP4) — load directly
-                                            player.src({ src: src, type: 'video/mp4' });
-                                        }
 
-                                        // Attempt autoplay (muted) and handle promise rejection
-                                        try { player.muted(true); } catch(e) {}
-                                        try {
-                                            const p = player.play && player.play();
-                                            if (p && typeof p.then === 'function') p.then(() => console.log('Autoplay started')).catch(err => console.debug('Autoplay prevented', err));
-                                        } catch(e) { console.debug('autoplay attempt failed', e); }
-
-                                        // Listen for playback errors
-                                        player.on('error', function() {
-                                            const err = player.error();
-                                            console.error('Video.js error', err);
+                                            // Try autoplay (muted) safely
+                                            try { player.muted(true); } catch(e) {}
+                                            try { const p = player.play && player.play(); if (p && typeof p.then === 'function') p.catch(()=>{}); } catch(e) {}
                                         });
-                                    });
 
-                                    // Cinema toggle => fullscreen-like experience
-                                    const cinemaToggle = document.getElementById('cinemaToggle');
-                                    cinemaToggle.addEventListener('click', () => {
-                                        const el = document.documentElement;
-                                        if (!el.classList.contains('cinema-mode')) {
-                                            el.classList.add('cinema-mode');
-                                            cinemaToggle.textContent = 'خروج من السينما';
-                                        } else {
-                                            el.classList.remove('cinema-mode');
-                                            cinemaToggle.textContent = 'وضع السينما';
-                                        }
-                                        setTimeout(() => {
-                                            try {
-                                                const p = videojs('hls-player');
-                                                if (p && typeof p.resize === 'function') p.resize();
-                                                else if (p && typeof p.trigger === 'function') p.trigger('resize');
-                                            } catch (e) { console.debug('resize fallback failed', e); }
-                                        }, 200);
-                                    });
+                                        // Wire unified controls
+                                        setupUnifiedControls(player, 'wasabi');
+                                    }
 
-                                    // Keyboard shortcuts: space play/pause, arrows seek
-                                    document.addEventListener('keydown', (e) => {
-                                        if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
-                                        const p = videojs('hls-player');
-                                        if (!p) return;
-                                        if (e.code === 'Space') { e.preventDefault(); if (p.paused()) p.play(); else p.pause(); }
-                                        if (e.code === 'ArrowRight') p.currentTime(p.currentTime() + 5);
-                                        if (e.code === 'ArrowLeft') p.currentTime(p.currentTime() - 5);
-                                    });
+                                    init();
+
+                                    // Prevent right-click and long-press
+                                    container.addEventListener('contextmenu', e => e.preventDefault());
+                                    let touchTimer = null;
+                                    container.addEventListener('touchstart', () => { touchTimer = setTimeout(()=>{}, 700); });
+                                    container.addEventListener('touchend', () => { if (touchTimer) clearTimeout(touchTimer); });
                                 })();
                             </script>
                         @else
@@ -171,22 +157,160 @@
                         @endif
 
                     @elseif($lesson->video_platform === 'vimeo')
-                        <iframe src="https://player.vimeo.com/video/{{ $lesson->vimeo_video_id }}" class="w-100 h-100" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                        <div class="player-container" data-video-source="vimeo" data-vimeo-id="{{ $lesson->vimeo_video_id }}">
+                            <div class="ratio ratio-16x9 bg-dark rounded shadow-sm overflow-hidden">
+                                    <iframe id="vimeo-player" src="https://player.vimeo.com/video/{{ $lesson->vimeo_video_id }}?api=1&background=0&dnt=1" class="w-100 h-100" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+                                </div>
+                                <script src="https://player.vimeo.com/api/player.js"></script>
+                            <div class="player-toolbar">
+                                <button id="back10" class="btn btn-sm btn-outline-light player-controls-btn">⏪ 10</button>
+                                <button id="forward10" class="btn btn-sm btn-outline-light player-controls-btn">10 ⏩</button>
+                                <select id="playbackRate" class="form-select form-select-sm">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2x</option>
+                                </select>
+                                <button id="cinemaToggle" class="btn btn-sm btn-outline-light">وضع السينما</button>
+                            </div>
+                        </div>
 
                     @elseif($lesson->video_platform === 'google_drive')
                         @php
                             $driveFileId = $lesson->video_url ?: $lesson->video_path;
                             $driveUrl = route('admin.video.drive.proxy', ['fileId' => $driveFileId]);
                         @endphp
-                        <video id="drive-player" class="w-100 h-100" controls controlsList="nodownload">
-                            <source src="{{ $driveUrl }}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                        <div class="player-container" data-video-source="drive">
+                            <div class="ratio ratio-16x9 bg-dark rounded shadow-sm overflow-hidden">
+                                <video id="drive-player" class="w-100 h-100" controls controlsList="nodownload nofullscreen noremoteplayback" disablePictureInPicture oncontextmenu="return false;">
+                                    <source src="{{ $driveUrl }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="player-toolbar">
+                                <button id="back10" class="btn btn-sm btn-outline-light player-controls-btn">⏪ 10</button>
+                                <button id="forward10" class="btn btn-sm btn-outline-light player-controls-btn">10 ⏩</button>
+                                <select id="playbackRate" class="form-select form-select-sm">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2x</option>
+                                </select>
+                                <button id="cinemaToggle" class="btn btn-sm btn-outline-light">وضع السينما</button>
+                            </div>
+                        </div>
                     @else
                         <div class="d-flex align-items-center justify-content-center h-100 text-white">
                             <p>الفيديو غير متاح حالياً</p>
                         </div>
                     @endif
+
+                    <script>
+                        // Unified playback helpers
+                        // Note: These controls do not reduce server-side protection. Signed URLs remain short-lived and/or proxied by the backend.
+                        // Drive limitations: playbackRate and precise seeking depend on browser and the proxied MP4; some browsers or Drive-hosted streams may not support setPlaybackRate.
+
+                        async function setPlaybackSpeedFor(source, player, rate) {
+                            try {
+                                if (source === 'wasabi') {
+                                    // Video.js
+                                    if (player && typeof player.playbackRate === 'function') player.playbackRate(rate);
+                                    else if (player && player.tech && player.tech().el) player.tech().el().playbackRate = rate;
+                                } else if (source === 'vimeo') {
+                                    // Vimeo returns a Promise
+                                    await player.setPlaybackRate(rate).catch(()=>{});
+                                } else if (source === 'drive') {
+                                    // HTML5 video
+                                    if (player && typeof player.playbackRate !== 'undefined') player.playbackRate = rate;
+                                }
+                            } catch (e) { console.debug('setPlaybackSpeed error', e); }
+                        }
+
+                        async function skipBy(source, player, seconds) {
+                            try {
+                                if (source === 'wasabi') {
+                                    if (!player) return;
+                                    const cur = player.currentTime();
+                                    player.currentTime(Math.max(0, cur + seconds));
+                                } else if (source === 'vimeo') {
+                                    const cur = await player.getCurrentTime();
+                                    await player.setCurrentTime(Math.max(0, cur + seconds));
+                                } else if (source === 'drive') {
+                                    if (!player) return;
+                                    player.currentTime = Math.max(0, player.currentTime + seconds);
+                                }
+                            } catch (e) { console.debug('skip error', e); }
+                        }
+
+                        // Wire controls inside a specific container
+                        function setupUnifiedControls(playerInstance, sourceType) {
+                            // find container for this source
+                            const container = document.querySelector('.player-container[data-video-source="'+sourceType+'"], .player-container[data-video-source]') || document.querySelector('[data-video-source="'+sourceType+'"]');
+                            if (!container) return;
+
+                            // Elements (may be duplicated for multiple containers; prefer scoped queries)
+                            const backBtn = container.querySelector('#back10');
+                            const fwdBtn = container.querySelector('#forward10');
+                            const rateSel = container.querySelector('#playbackRate');
+                            const cinemaBtn = container.querySelector('#cinemaToggle');
+
+                            if (backBtn) backBtn.addEventListener('click', (e) => { e.preventDefault(); skipBy(sourceType, playerInstance, -10); });
+                            if (fwdBtn) fwdBtn.addEventListener('click', (e) => { e.preventDefault(); skipBy(sourceType, playerInstance, 10); });
+                            if (rateSel) rateSel.addEventListener('change', (e) => { setPlaybackSpeedFor(sourceType, playerInstance, parseFloat(e.target.value)); });
+
+                            if (cinemaBtn) cinemaBtn.addEventListener('click', (e) => {
+                                const el = document.documentElement;
+                                if (!el.classList.contains('cinema-mode')) { el.classList.add('cinema-mode'); cinemaBtn.textContent = 'خروج من السينما'; }
+                                else { el.classList.remove('cinema-mode'); cinemaBtn.textContent = 'وضع السينما'; }
+                                setTimeout(()=>{ try { if (sourceType === 'wasabi') { const p = videojs('hls-player'); if (p && typeof p.resize === 'function') p.resize(); else if (p && typeof p.trigger === 'function') p.trigger('resize'); } } catch(e){} }, 200);
+                            });
+
+                            // Keyboard shortcuts
+                            document.addEventListener('keydown', async (e) => {
+                                if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+                                if (e.code === 'Space') { e.preventDefault();
+                                    try {
+                                        if (sourceType === 'wasabi') { const p = videojs('hls-player'); if (p.paused()) p.play(); else p.pause(); }
+                                        else if (sourceType === 'vimeo') { const st = await playerInstance.getPaused(); if (st) playerInstance.play(); else playerInstance.pause(); }
+                                        else if (sourceType === 'drive') { if (playerInstance.paused) playerInstance.play(); else playerInstance.pause(); }
+                                    } catch(e){}
+                                }
+                                if (e.code === 'ArrowRight') { skipBy(sourceType, playerInstance, 10); }
+                                if (e.code === 'ArrowLeft') { skipBy(sourceType, playerInstance, -10); }
+                            });
+                        }
+
+                        // Initialize Vimeo and Drive players and attach unified controls
+                        document.addEventListener('DOMContentLoaded', function(){
+                            // Vimeo
+                            const vimeoContainer = document.querySelector('.player-container[data-video-source="vimeo"]');
+                            if (vimeoContainer) {
+                                const iframe = document.getElementById('vimeo-player');
+                                if (iframe && window.Vimeo) {
+                                    const vplayer = new Vimeo.Player(iframe);
+                                    // Disable download via player parameters / privacy — embedding domain controls are enforced server-side.
+                                    setupUnifiedControls(vplayer, 'vimeo');
+                                    // Ensure right-click disabled
+                                    iframe.addEventListener('contextmenu', e=>e.preventDefault());
+                                }
+                            }
+
+                            // Drive (HTML5 video)
+                            const driveContainer = document.querySelector('.player-container[data-video-source="drive"]');
+                            if (driveContainer) {
+                                const v = document.getElementById('drive-player');
+                                if (v) {
+                                    // Some browsers may not support playbackRate on streamed/proxied content
+                                    setupUnifiedControls(v, 'drive');
+                                    v.addEventListener('contextmenu', e=>e.preventDefault());
+                                }
+                            }
+                        });
+                    </script>
                 @else
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 text-white p-4">
                         <h3 class="mb-3">الفيديو متاح فقط للطلاب المسجلين في الدورة</h3>

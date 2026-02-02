@@ -19,6 +19,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\VideoStreamController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ServiceController;
@@ -108,6 +109,8 @@ Route::middleware('auth')->group(function () {
     
     // الدروس
     Route::get('/lessons/{lesson}', [LessonController::class, 'show'])->name('lessons.show');
+    // Provide short-lived signed HLS master playlist URL (used by frontend to avoid embedding URLs in page source)
+    Route::get('/lessons/{lesson}/stream-url', [VideoStreamController::class, 'getStreamUrl'])->name('lessons.stream_url');
     Route::post('/lessons/{lesson}/progress', [LessonController::class, 'updateProgress'])->name('lessons.progress');
     Route::post('/lessons/{lesson}/complete', [LessonController::class, 'markCompleted'])->name('lessons.complete');
     
