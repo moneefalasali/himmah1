@@ -16,18 +16,23 @@ class LessonController extends Controller
     {
         $user = Auth::user();
         
-        // Check if user can access this lesson
-        if (!$lesson->canUserAccess($user)) {
-            // Allow preview for admins and the course owner (teacher)
-            if ($user && ($user->isAdmin() || ($user->isTeacher() && $lesson->course->user_id === $user->id))) {
-                // allow preview — do not create progress records for preview-only users
-            } else {
-                if (!$user) {
-                    return redirect()->route('login');
-                }
+        // If lesson is free allow viewing without enrollment or purchase
+        if ($lesson->is_free) {
+            // anyone can view free lessons (guests or authenticated)
+        } else {
+            // Check if user can access this lesson
+            if (!$lesson->canUserAccess($user)) {
+                // Allow preview for admins and the course owner (teacher)
+                if ($user && ($user->isAdmin() || ($user->isTeacher() && $lesson->course->user_id === $user->id))) {
+                    // allow preview — do not create progress records for preview-only users
+                } else {
+                    if (!$user) {
+                        return redirect()->route('login');
+                    }
 
-                return redirect()->route('courses.show', $lesson->course)
-                    ->with('error', 'يجب شراء الدورة للوصول إلى هذا الدرس.');
+                    return redirect()->route('courses.show', $lesson->course)
+                        ->with('error', 'يجب شراء الدورة للوصول إلى هذا الدرس.');
+                }
             }
         }
 

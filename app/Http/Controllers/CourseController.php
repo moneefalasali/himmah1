@@ -111,6 +111,10 @@ class CourseController extends Controller
         // Also fetch lessons that are not assigned to any section so we can display them
         $lessonsWithoutSection = $course->lessons()->whereNull('section_id')->orderBy('order')->get();
 
-        return view('courses.curriculum', compact('course', 'lessonsWithoutSection'));
+        // Provide current user enrollment status to the view so it can show free lessons to non-enrolled users
+        $user = auth()->user();
+        $isEnrolled = $user ? $user->isEnrolledIn($course) : false;
+
+        return view('courses.curriculum', compact('course', 'lessonsWithoutSection', 'isEnrolled'));
     }
 }

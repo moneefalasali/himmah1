@@ -46,11 +46,20 @@
                 
                 <ul class="list-group">
                     @foreach($lessons as $lesson)
+                        @php
+                            // determine if current viewer can open the lesson directly
+                            $user = auth()->user();
+                            $canOpen = $lesson->is_free || ($user && ($user->isAdmin() || $user->isEnrolledIn($course) || ($user->isTeacher() && $course->user_id === $user->id)));
+                        @endphp
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
-                                    <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
-                                </a>
+                                @if($canOpen)
+                                    <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
+                                        <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
+                                    </a>
+                                @else
+                                    <span class="text-muted"><i class="fas fa-lock me-2"></i> {{ $lesson->title }}</span>
+                                @endif
                                 <small class="d-block text-muted ms-4">
                                     @if($lesson->duration)
                                         {{ $lesson->formatted_duration }}
@@ -79,11 +88,19 @@
                         
                         <ul class="list-group">
                             @foreach($section->lessons as $lesson)
+                                @php
+                                    $user = auth()->user();
+                                    $canOpen = $lesson->is_free || ($user && ($user->isAdmin() || $user->isEnrolledIn($course) || ($user->isTeacher() && $course->user_id === $user->id)));
+                                @endphp
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
-                                            <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
-                                        </a>
+                                        @if($canOpen)
+                                            <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
+                                                <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted"><i class="fas fa-lock me-2"></i> {{ $lesson->title }}</span>
+                                        @endif
                                         <small class="d-block text-muted ms-4">
                                             @if($lesson->duration)
                                                 {{ $lesson->formatted_duration }}
@@ -116,11 +133,19 @@
                         <h5 class="mb-3">دروس بدون قسم</h5>
                         <ul class="list-group">
                             @foreach($lessonsWithoutSection as $lesson)
+                                @php
+                                    $user = auth()->user();
+                                    $canOpen = $lesson->is_free || ($user && ($user->isAdmin() || $user->isEnrolledIn($course) || ($user->isTeacher() && $course->user_id === $user->id)));
+                                @endphp
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
-                                            <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
-                                        </a>
+                                        @if($canOpen)
+                                            <a href="{{ route('lessons.show', $lesson) }}" class="text-decoration-none">
+                                                <i class="fas fa-play-circle me-2"></i> {{ $lesson->title }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted"><i class="fas fa-lock me-2"></i> {{ $lesson->title }}</span>
+                                        @endif
                                         <small class="d-block text-muted ms-4">
                                             @if($lesson->duration)
                                                 {{ $lesson->formatted_duration }}
